@@ -1,0 +1,8 @@
+version: '3'
+services:
+  nekostic:
+    container_name: githook
+    image: githook
+    ports:
+      - "7005:7005"
+    restart: unless-stopped

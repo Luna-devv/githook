@@ -46,6 +46,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		events.Push(w, r)
 	case "star":
 		events.Star(w, r)
+	case "workflow_job":
+		events.WorkflowJob(w, r, client)
+	case "workflow_run":
+		events.WorkflowRun(w, r, client)
 	default:
 		http.Error(w, fmt.Sprintf("Unsupported event: %s", githubEvent), http.StatusBadRequest)
 		return

@@ -38,6 +38,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received GitHub event: %s\n", githubEvent)
 
 	switch githubEvent {
+	case "deployment_status":
+		events.DeploymentStatus(w, r)
 	case "ping":
 		events.Ping(w, r)
 	case "push":

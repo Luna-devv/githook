@@ -40,6 +40,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	switch githubEvent {
 	case "ping":
 		events.Ping(w, r)
+	case "push":
+		events.Push(w, r)
 	default:
 		http.Error(w, fmt.Sprintf("Unsupported event: %s", githubEvent), http.StatusBadRequest)
 		return

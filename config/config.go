@@ -9,7 +9,6 @@ import (
 
 type Config struct {
 	Redis  RedisConfig
-	Port   string
 	Secret string
 }
 
@@ -34,7 +33,6 @@ func Get() Config {
 			Username: getEnv("REDIS_USR"),
 			Db:       3,
 		},
-		Port:   getEnv("PORT"),
 		Secret: getEnv("SECRET"),
 	}
 }

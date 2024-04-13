@@ -4,5 +4,5 @@ services:
     container_name: githook
     image: githook
     ports:
-      - "7005:7005"
+      - "5004:8080"
     restart: unless-stopped

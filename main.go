@@ -25,7 +25,7 @@ func main() {
 
 	http.HandleFunc("GET /create", routes.HandleCreate)
 
-	http.ListenAndServe(":"+conf.Port, nil)
+	http.ListenAndServe(":8080", nil)
 
 	defer client.Close()
 }

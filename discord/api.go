@@ -4,15 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-
-	"github.com/Luna-devv/githook/config"
 )
 
 var client = &http.Client{}
 
-func SendWebhook(payload WebhookPayload) {
-	conf := config.Get()
+func SendWebhook(url string, payload WebhookPayload) {
 	payloadBytes, err := json.Marshal(payload)
 
 	if err != nil {
@@ -20,8 +18,8 @@ func SendWebhook(payload WebhookPayload) {
 		return
 	}
 
-	fmt.Println(bytes.NewBuffer(payloadBytes))
-	req, err := http.NewRequest("POST", conf.Webhook, bytes.NewBuffer(payloadBytes))
+	log.Println(bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
 
 	if err != nil {
 		fmt.Println("Error occurred", err)
@@ -38,7 +36,7 @@ func SendWebhook(payload WebhookPayload) {
 	}
 
 	if res.StatusCode != http.StatusNoContent {
-		fmt.Println("Error occurred", res.Status)
+		log.Fatalln("Error occurred", res.Status)
 		body := new(bytes.Buffer)
 		body.ReadFrom(res.Body)
 		fmt.Println(body.String())

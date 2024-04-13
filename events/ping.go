@@ -10,21 +10,24 @@ import (
 	"github.com/google/go-github/v61/github"
 )
 
-func Ping(w http.ResponseWriter, r *http.Request) {
+func Ping(w http.ResponseWriter, r *http.Request, url string) {
 	var body github.PingEvent
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&body)
 
-	discord.SendWebhook(discord.WebhookPayload{
-		Username:  *body.Sender.Login,
-		AvatarURL: *body.Sender.AvatarURL,
-		Embeds: []discord.Embed{
-			{
-				Title:       fmt.Sprintf("%s: Ping", *body.Repo.FullName),
-				URL:         *body.Repo.HTMLURL,
-				Description: "🏓 Ping! Pong!",
-				Color:       utils.GetColors().Default,
+	discord.SendWebhook(
+		url,
+		discord.WebhookPayload{
+			Username:  *body.Sender.Login,
+			AvatarURL: *body.Sender.AvatarURL,
+			Embeds: []discord.Embed{
+				{
+					Title:       fmt.Sprintf("%s: Ping", *body.Repo.FullName),
+					URL:         *body.Repo.HTMLURL,
+					Description: "🏓 Ping! Pong!",
+					Color:       utils.GetColors().Default,
+				},
 			},
 		},
-	})
+	)
 }

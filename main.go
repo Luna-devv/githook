@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Luna-devv/githook/config"
-	"github.com/Luna-devv/githook/events"
+	"github.com/Luna-devv/githook/routes"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/redis/go-redis/v9"
 )
@@ -20,40 +19,13 @@ var client = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	http.HandleFunc("POST /", handler)
+	http.HandleFunc("POST /incoming/{id}", func(w http.ResponseWriter, r *http.Request) {
+		routes.HandleIncoming(w, r, client)
+	})
 
-	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("GET /create", routes.HandleCreate)
+
+	http.ListenAndServe(":"+conf.Port, nil)
 
 	defer client.Close()
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	githubEvent := r.Header.Get("X-Github-Event")
-
-	if githubEvent == "" {
-		http.Error(w, "Missing X-Github-Event header", http.StatusBadRequest)
-		return
-	}
-
-	fmt.Printf("Received GitHub event: %s\n", githubEvent)
-
-	switch githubEvent {
-	case "deployment_status":
-		events.DeploymentStatus(w, r)
-	case "ping":
-		events.Ping(w, r)
-	case "push":
-		events.Push(w, r)
-	case "star":
-		events.Star(w, r)
-	case "workflow_job":
-		events.WorkflowJob(w, r, client)
-	case "workflow_run":
-		events.WorkflowRun(w, r, client)
-	default:
-		http.Error(w, fmt.Sprintf("Unsupported event: %s", githubEvent), http.StatusBadRequest)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }

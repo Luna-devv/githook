@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-github/v61/github"
 )
 
-func Push(w http.ResponseWriter, r *http.Request) {
+func Push(w http.ResponseWriter, r *http.Request, url string) {
 	var body github.PushEvent
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&body)
@@ -25,21 +25,24 @@ func Push(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	discord.SendWebhook(discord.WebhookPayload{
-		Username:  *body.Sender.Login,
-		AvatarURL: *body.Sender.AvatarURL,
-		Embeds: []discord.Embed{
-			{
-				Title: fmt.Sprintf(
-					"%s: %d commit%s",
-					*body.Repo.FullName,
-					len(body.Commits),
-					utils.Ternary(len(body.Commits) > 1, "s", ""),
-				),
-				URL:         *body.Repo.HTMLURL,
-				Description: utils.Truncate(desc, 4000),
-				Color:       utils.GetColors().Default,
+	discord.SendWebhook(
+		url,
+		discord.WebhookPayload{
+			Username:  *body.Sender.Login,
+			AvatarURL: *body.Sender.AvatarURL,
+			Embeds: []discord.Embed{
+				{
+					Title: fmt.Sprintf(
+						"%s: %d commit%s",
+						*body.Repo.FullName,
+						len(body.Commits),
+						utils.Ternary(len(body.Commits) > 1, "s", ""),
+					),
+					URL:         *body.Repo.HTMLURL,
+					Description: utils.Truncate(desc, 4000),
+					Color:       utils.GetColors().Default,
+				},
 			},
 		},
-	})
+	)
 }

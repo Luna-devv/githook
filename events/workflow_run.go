@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func WorkflowRun(w http.ResponseWriter, r *http.Request, client *redis.Client) {
+func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *redis.Client) {
 	var body github.WorkflowRunEvent
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&body)
@@ -49,25 +49,28 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, client *redis.Client) {
 		)
 	}
 
-	discord.SendWebhook(discord.WebhookPayload{
-		Username:  *body.Sender.Login,
-		AvatarURL: *body.Sender.AvatarURL,
-		Embeds: []discord.Embed{
-			{
-				Title: fmt.Sprintf("%s@%s: Workflow %s", *body.Repo.FullName, *body.WorkflowRun.HeadBranch, *body.WorkflowRun.Conclusion),
-				Description: fmt.Sprintf(
-					"[`%s`](%s) %s",
-					(*body.WorkflowRun.HeadCommit.ID)[:7],
-					fmt.Sprintf("https://github.com/%s/commit/%s", *body.Repo.FullName, *body.WorkflowRun.HeadCommit.ID),
-					utils.Truncate(*body.WorkflowRun.HeadCommit.Message, 62),
-				) + "\n\n>>> " + desc,
-				URL: *body.WorkflowRun.HTMLURL,
-				Color: utils.Ternary(
-					*body.WorkflowRun.Conclusion == "success",
-					utils.GetColors().Success,
-					utils.GetColors().Error,
-				).(int),
+	discord.SendWebhook(
+		url,
+		discord.WebhookPayload{
+			Username:  *body.Sender.Login,
+			AvatarURL: *body.Sender.AvatarURL,
+			Embeds: []discord.Embed{
+				{
+					Title: fmt.Sprintf("%s@%s: Workflow %s", *body.Repo.FullName, *body.WorkflowRun.HeadBranch, *body.WorkflowRun.Conclusion),
+					Description: fmt.Sprintf(
+						"[`%s`](%s) %s",
+						(*body.WorkflowRun.HeadCommit.ID)[:7],
+						fmt.Sprintf("https://github.com/%s/commit/%s", *body.Repo.FullName, *body.WorkflowRun.HeadCommit.ID),
+						utils.Truncate(*body.WorkflowRun.HeadCommit.Message, 62),
+					) + "\n\n>>> " + desc,
+					URL: *body.WorkflowRun.HTMLURL,
+					Color: utils.Ternary(
+						*body.WorkflowRun.Conclusion == "success",
+						utils.GetColors().Success,
+						utils.GetColors().Error,
+					).(int),
+				},
 			},
 		},
-	})
+	)
 }

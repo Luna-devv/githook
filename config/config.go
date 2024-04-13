@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	Redis   RedisConfig
-	Port    string
-	Webhook string
+	Redis  RedisConfig
+	Port   string
+	Secret string
 }
 
 type RedisConfig struct {
@@ -34,8 +34,8 @@ func Get() Config {
 			Username: getEnv("REDIS_USR"),
 			Db:       3,
 		},
-		Port:    getEnv("PORT"),
-		Webhook: getEnv("WEBHOOK"),
+		Port:   getEnv("PORT"),
+		Secret: getEnv("SECRET"),
 	}
 }
 

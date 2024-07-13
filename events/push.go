@@ -29,6 +29,11 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 		)
 	}
 
+	head := ""
+	if body.Head != nil {
+		head = *body.Head
+	}
+
 	discord.SendWebhook(
 		url,
 		discord.WebhookPayload{
@@ -40,9 +45,9 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 						"%s%s: %d commit%s",
 						*body.Repo.FullName,
 						utils.Ternary(
-							*body.Head == *body.Repo.MasterBranch,
+							head == "" || head == *body.Repo.MasterBranch,
 							"",
-							"@"+*body.Head,
+							"@"+head,
 						),
 						len(body.Commits),
 						utils.Ternary(len(body.Commits) > 1, "s", ""),

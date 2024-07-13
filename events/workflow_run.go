@@ -56,7 +56,16 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 			AvatarURL: *body.Sender.AvatarURL,
 			Embeds: []discord.Embed{
 				{
-					Title: fmt.Sprintf("%s@%s: Workflow %s", *body.Repo.FullName, *body.WorkflowRun.HeadBranch, *body.WorkflowRun.Conclusion),
+					Title: fmt.Sprintf(
+						"%s%s: Workflow %s",
+						*body.Repo.FullName,
+						utils.Ternary(
+							*body.WorkflowRun.HeadBranch == *body.Repo.MasterBranch,
+							"",
+							"@"+*body.WorkflowRun.HeadBranch,
+						),
+						*body.WorkflowRun.Conclusion,
+					),
 					Description: fmt.Sprintf(
 						"[`%s`](%s) %s",
 						(*body.WorkflowRun.HeadCommit.ID)[:7],

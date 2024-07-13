@@ -33,8 +33,13 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 			Embeds: []discord.Embed{
 				{
 					Title: fmt.Sprintf(
-						"%s: %d commit%s",
+						"%s%s: %d commit%s",
 						*body.Repo.FullName,
+						utils.Ternary(
+							*body.Head == *body.Repo.MasterBranch,
+							"",
+							"@"+*body.Head,
+						),
 						len(body.Commits),
 						utils.Ternary(len(body.Commits) > 1, "s", ""),
 					),

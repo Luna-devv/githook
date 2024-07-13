@@ -15,6 +15,10 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&body)
 
+	if len(body.Commits) == 0 {
+		return
+	}
+
 	var desc string
 	for _, c := range body.Commits {
 		commit := *c

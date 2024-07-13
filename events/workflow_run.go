@@ -49,6 +49,11 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 		)
 	}
 
+	head := ""
+	if body.WorkflowRun.HeadBranch != nil {
+		head = *body.WorkflowRun.HeadBranch
+	}
+
 	discord.SendWebhook(
 		url,
 		discord.WebhookPayload{
@@ -60,9 +65,9 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 						"%s%s: Workflow %s",
 						*body.Repo.FullName,
 						utils.Ternary(
-							*body.WorkflowRun.HeadBranch == *body.Repo.MasterBranch,
+							head == "" || head == "master" || head == "main",
 							"",
-							"@"+*body.WorkflowRun.HeadBranch,
+							"@"+head,
 						),
 						*body.WorkflowRun.Conclusion,
 					),

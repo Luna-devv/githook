@@ -45,7 +45,7 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 						"%s%s: %d commit%s",
 						*body.Repo.FullName,
 						utils.Ternary(
-							head == "" || head == *body.Repo.MasterBranch,
+							head == "" || head == "master" || head == "main",
 							"",
 							"@"+head,
 						),

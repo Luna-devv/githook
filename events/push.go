@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/Luna-devv/githook/discord"
 	"github.com/Luna-devv/githook/utils"
@@ -29,10 +30,7 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 		)
 	}
 
-	head := ""
-	if body.Head != nil {
-		head = *body.Head
-	}
+	branch := strings.Split(*body.Ref, "/heads/")[1]
 
 	discord.SendWebhook(
 		url,
@@ -45,9 +43,9 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 						"%s%s: %d commit%s",
 						*body.Repo.FullName,
 						utils.Ternary(
-							head == "" || head == "master" || head == "main",
+							branch == "" || branch == "master" || branch == "main",
 							"",
-							"@"+head,
+							"@"+branch,
 						),
 						len(body.Commits),
 						utils.Ternary(len(body.Commits) > 1, "s", ""),

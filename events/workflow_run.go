@@ -27,7 +27,6 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 
 	for _, key := range jobKeys.Val() {
 		data, err := client.Get(ctx, key).Result()
-
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -49,11 +48,6 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 		)
 	}
 
-	head := ""
-	if body.WorkflowRun.HeadBranch != nil {
-		head = *body.WorkflowRun.HeadBranch
-	}
-
 	discord.SendWebhook(
 		url,
 		discord.WebhookPayload{
@@ -65,9 +59,9 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 						"%s%s: Workflow %s",
 						*body.Repo.FullName,
 						utils.Ternary(
-							head == "" || head == "master" || head == "main",
+							*body.WorkflowRun.HeadBranch == "" || *body.WorkflowRun.HeadBranch == "master" || *body.WorkflowRun.HeadBranch == "main",
 							"",
-							"@"+head,
+							"@"+*body.WorkflowRun.HeadBranch,
 						),
 						*body.WorkflowRun.Conclusion,
 					),

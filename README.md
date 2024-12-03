@@ -1,44 +1,57 @@
 [![](https://img.shields.io/discord/828676951023550495?color=5865F2&logo=discord&logoColor=white)](https://lunish.nl/support)
-![](https://img.shields.io/github/repo-size/Luna-devv/githook?maxAge=3600)
+![](https://ghcr-badge.egpl.dev/luna-devv/githook/latest_tag)
+![](https://ghcr-badge.egpl.dev/luna-devv/githook/size)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3I6AFVAP)
 
 **⚠️ In development, breaking changes ⚠️**
 
 ## About
-GitHook is a discord bot designed to improve GitHub webhooks for discord. Basically just a modern and nicer version of the discord built-in GitHub webhook support.
+GitHook is a Discord -> GitHub middleware designed to improve GitHub notifications for discord. Basically just a modern and nicer version of the discord built-in GitHub webhook support.
 
 If you need help developing with this, join **[our Discord Server](https://discord.com/invite/yYd6YKHQZH)**.
 
-![image](https://github.com/Luna-devv/githook/assets/71079641/00fbddee-adc9-4156-9e5b-cfd3845eb6f0)
-![image](https://github.com/Luna-devv/githook/assets/71079641/23aed8ca-4577-4c6b-888c-ec7515d7e2cd)
-![image](https://github.com/Luna-devv/githook/assets/71079641/0a7962cd-0cde-44b6-b4cc-fb51b6de7a41)
+![image](https://github.com/user-attachments/assets/4a52bba8-b71f-413a-be10-f0a5e626906d)
 
-## Setup
-Clone this repo with the following commands:
+## Deploy
+To deploy this project, create the following `docker-compose.yml`:
+```yml
+services:
+  app:
+    image: ghcr.io/luna-devv/githook:latest
+    container_name: githook
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+```
 
-```bash
-git clone https://github.com/Luna-devv/githook
+Create a `.env` file with the following values:
+```env
+REDIS_USR=""
+REDIS_PW=""
+REDIS_ADDR="127.0.0.1:6379"
+SECRET="replace-me-with-a-random-string"
+```
+
+To deploy the project, run:
+```sh
+docker compose up -d
 ```
 
 ## Develope
-Go goes brrrrrrrr
-
-To run the server run
+Clone this repo and start the server with the following commands:
 ```bash
+git clone https://github.com/Luna-devv/githook
 go run .
 ```
 
-## Deploy
+## Usage
+To create a webhook, you have to follow the following steps:
+1. Go to [localhost:8080/create?url=<discord-webhook>](http://localhost:8080/create?url=); replace `<discord-webhook>` with an actual webhook url.
+2. Go to your repostitories webhook settings.
+3. Enter `http://localhost:8080/incomming/<hash>`; replace `<hash>` with the hash returned from step 1 and 2.
+4. Set **Content Type** to `application/json`, **Secret** to none, enable *SSL Verification** and enable all events.
 
-Since docker is the best thing that exists for managing deployments, it's the thing we use. If you don't want to use docker, install the go programing language from [go.dev](https://go.dev) and run `go run .` or however you want to run it.
+![image](https://github.com/user-attachments/assets/20f5d319-482a-418d-a20a-b81ac79cc572)
 
-To build the docker container run
-```bash
-docker build -t githook .
-```
-
-To start the docker container (detached) run 
-```bash
-docker compose up -d
-```
+*Please don't be stupid, localhost won't work with GitHub*

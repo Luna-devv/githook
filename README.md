@@ -23,6 +23,8 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    volumes:
+      - ./.env:/app/.env
 ```
 
 Create a `.env` file with the following values:

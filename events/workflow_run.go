@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Luna-devv/githook/discord"
 	"github.com/Luna-devv/githook/utils"
@@ -19,6 +20,9 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 	if *body.Action != "completed" {
 		return
 	}
+
+	// to give github some time to send the 'workflow_job' event first
+	time.Sleep(8 * time.Second)
 
 	ctx := r.Context()
 	jobKeys := client.Keys(ctx, "workflow:*")
@@ -66,11 +70,12 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 						*body.WorkflowRun.Conclusion,
 					),
 					Description: fmt.Sprintf(
-						"[`%s`](%s) %s",
+						"[`%s`](%s) %s%s",
 						(*body.WorkflowRun.HeadCommit.ID)[:7],
 						fmt.Sprintf("https://github.com/%s/commit/%s", *body.Repo.FullName, *body.WorkflowRun.HeadCommit.ID),
 						utils.Truncate(*body.WorkflowRun.HeadCommit.Message, 62),
-					) + "\n\n>>> " + desc,
+						utils.Ternary(len(jobKeys.Val()) > 0, "\n\n>>> " + desc, "").(string),
+					),
 					URL: *body.WorkflowRun.HTMLURL,
 					Color: utils.Ternary(
 						*body.WorkflowRun.Conclusion == "success",

@@ -13,6 +13,7 @@ import (
 
 type WorkflowJobCache struct {
 	ID          string `json:"id"`
+	RunID       string `json:"run_id"`
 	Name        string `json:"name"`
 	Conclusions string `json:"conclusions"`
 }
@@ -26,10 +27,9 @@ func WorkflowJob(w http.ResponseWriter, r *http.Request, client *redis.Client) {
 		return
 	}
 
-	ctx := r.Context()
-
 	data := WorkflowJobCache{
 		ID:          strconv.FormatInt(*body.WorkflowJob.ID, 10),
+		RunID:       strconv.FormatInt(*body.WorkflowJob.RunID, 10),
 		Name:        *body.WorkflowJob.Name,
 		Conclusions: *body.WorkflowJob.Conclusion,
 	}
@@ -41,8 +41,8 @@ func WorkflowJob(w http.ResponseWriter, r *http.Request, client *redis.Client) {
 	}
 
 	err = client.Set(
-		ctx,
-		fmt.Sprintf("workflow:%d", *body.WorkflowJob.ID),
+		r.Context(),
+		fmt.Sprintf("workflow:job:%s:%d", *body.WorkflowJob.HeadSHA, *body.WorkflowJob.ID),
 		jsonData,
 		24*time.Hour,
 	).

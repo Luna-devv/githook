@@ -17,20 +17,35 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&body)
 
+	if *body.Action == "requested" {
+		err := client.Incr(r.Context(), "workflow:run:"+*body.WorkflowRun.HeadSHA).Err()
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		return
+	}
+
 	if *body.Action != "completed" {
 		return
 	}
 
-	// to give github some time to send the 'workflow_job' event first
-	time.Sleep(8 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	ctx := r.Context()
-	jobKeys := client.Keys(ctx, "workflow:*")
-	defer client.Del(ctx, jobKeys.Val()...)
-	var desc string
+	num, err := client.Decr(r.Context(), "workflow:run:"+*body.WorkflowRun.HeadSHA).Result()
+	if num != 0 || err != nil {
+		return
+	}
 
-	for _, key := range jobKeys.Val() {
-		data, err := client.Get(ctx, key).Result()
+	keys := client.Keys(r.Context(), fmt.Sprintf("workflow:job:%s:*", *body.WorkflowRun.HeadSHA)).Val()
+	defer client.Del(r.Context(), keys...)
+
+	conclusion := "success"
+	desc := ""
+
+	for _, key := range keys {
+		data, err := client.Get(r.Context(), key).Result()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -44,11 +59,15 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 			return
 		}
 
+		if job.Conclusions != "success" {
+			conclusion = job.Conclusions
+		}
+
 		desc += fmt.Sprintf(
 			"%s %s [↗︎](%s)\n",
 			utils.Ternary(job.Conclusions == "success", "<:tick:1017781086102761543>", "<:cross:1017781065340964934>"),
 			job.Name,
-			fmt.Sprintf("https://github.com/%s/actions/runs/%d/job/%s", *body.Repo.FullName, *body.WorkflowRun.ID, job.ID),
+			fmt.Sprintf("https://github.com/%s/actions/runs/%s/job/%s", *body.Repo.FullName, job.RunID, job.ID),
 		)
 	}
 
@@ -67,18 +86,12 @@ func WorkflowRun(w http.ResponseWriter, r *http.Request, url string, client *red
 							"",
 							"@"+*body.WorkflowRun.HeadBranch,
 						),
-						*body.WorkflowRun.Conclusion,
+						conclusion,
 					),
-					Description: fmt.Sprintf(
-						"[`%s`](%s) %s%s",
-						(*body.WorkflowRun.HeadCommit.ID)[:7],
-						fmt.Sprintf("https://github.com/%s/commit/%s", *body.Repo.FullName, *body.WorkflowRun.HeadCommit.ID),
-						utils.Truncate(*body.WorkflowRun.HeadCommit.Message, 62),
-						utils.Ternary(len(jobKeys.Val()) > 0, "\n\n>>> " + desc, "").(string),
-					),
-					URL: *body.WorkflowRun.HTMLURL,
+					Description: desc,
+					URL:         *body.Repo.HTMLURL + "/actions",
 					Color: utils.Ternary(
-						*body.WorkflowRun.Conclusion == "success",
+						conclusion == "success",
 						utils.GetColors().Success,
 						utils.GetColors().Error,
 					).(int),

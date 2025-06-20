@@ -1,13 +1,13 @@
-FROM golang:1.23.2
-
+FROM golang:alpine AS builder
 WORKDIR /app
-
 COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+RUN go mod download
+COPY . .
+RUN go build -o server .
 
-COPY . ./
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/server .
 
-# Build the Go application binary
-RUN go build -o main
-
-CMD ["/app/main"]
+EXPOSE 8080
+CMD ["./server"]

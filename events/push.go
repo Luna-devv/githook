@@ -50,7 +50,7 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 						len(body.Commits),
 						utils.Ternary(len(body.Commits) > 1, "s", ""),
 					),
-					URL:         *body.Repo.HTMLURL,
+					URL:         *body.Compare,
 					Description: utils.Truncate(desc, 4000),
 					Color:       utils.GetColors().Default,
 				},

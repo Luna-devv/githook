@@ -19,7 +19,7 @@ func SendWebhook(url string, payload WebhookPayload) {
 	}
 
 	log.Println(bytes.NewBuffer(payloadBytes))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", url + "?with_components=true", bytes.NewBuffer(payloadBytes))
 
 	if err != nil {
 		fmt.Println("Error occurred", err)

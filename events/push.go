@@ -26,7 +26,11 @@ func Push(w http.ResponseWriter, r *http.Request, url string) {
 		desc += fmt.Sprintf(
 			"[`%s`](%s) %s\n",
 			(*commit.ID)[:7],
-			*commit.URL, utils.Truncate(*commit.Message, 62),
+			*commit.URL,
+			utils.Truncate(
+				strings.Split(*commit.Message, "\n")[0],
+			 62,
+			),
 		)
 	}
 
